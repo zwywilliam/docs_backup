@@ -50,6 +50,7 @@ float3 GetHairWorksDynamicLighting(float3 ScreenVector, uint2 SamplePos, FHairSc
 	float LightRadiusMask = 1;
 	float SpotFalloff = 1;
 
+	//点光源
 	if(LightData.bRadialLight)
 	{
 		ToLight = LightData.LightPositionAndInvRadius.xyz - WorldPosition;
@@ -111,6 +112,7 @@ float3 GetHairWorksDynamicLighting(float3 ScreenVector, uint2 SamplePos, FHairSc
 
 	FGBufferData GBuffer = (FGBufferData)0;
 
+	//阴影
 	if(LightData.ShadowedBits)
 	{
 		GBuffer.PrecomputedShadowFactors = 1;

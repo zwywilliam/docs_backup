@@ -643,11 +643,13 @@ float3 HairShadingRef( FGBufferData GBuffer, float3 L, float3 V, half3 N, uint2 
 }
 #endif
 
+//论文下载地址：http://www.eugenedeon.com/project/importance-sampling-for-physically-based-hair-fiber-models/
 // Approximation to HairShadingRef using concepts from the following papers:
 // [Marschner et al. 2003, "Light Scattering from Human Hair Fibers"]
 // [Pekelis et al. 2015, "A Data-Driven Light Scattering Model for Hair"]
 float3 HairShading( FGBufferData GBuffer, float3 L, float3 V, half3 N, float Shadow, float Backlit, float Area, uint2 Random )
 {
+	//保证Roughness大于0，避免计算出Nan
 	// to prevent NaN with decals
 	// OR-18489 HERO: IGGY: RMB on E ability causes blinding hair effect
 	// OR-17578 HERO: HAMMER: E causes blinding light on heroes with hair
@@ -663,16 +665,24 @@ float3 HairShading( FGBufferData GBuffer, float3 L, float3 V, half3 N, float Sha
 #else
 	// N is the vector parallel to hair pointing toward root
 
+	//因为N是与发丝平衡，指向root，而不是normal，因此这里dot是sin不是cos
 	const float VoL       = dot(V,L);
-	const float SinThetaL = dot(N,L);
+	const float SinThetaL = dot(N,L); //sin(N和L夹角)
 	const float SinThetaV = dot(N,V);
+
+	//什么是D，N和V/L的夹角的中间
 	float CosThetaD = cos( 0.5 * abs( asinFast( SinThetaV ) - asinFast( SinThetaL ) ) );
 
 	//CosThetaD = abs( CosThetaD ) < 0.01 ? 0.01 : CosThetaD;
 
+	//将N投影到L的垂直平面？
 	const float3 Lp = L - SinThetaL * N;
 	const float3 Vp = V - SinThetaV * N;
+
+	//
 	const float CosPhi = dot(Lp,Vp) * rsqrt( dot(Lp,Lp) * dot(Vp,Vp) + 1e-4 );
+
+	//cos半phi
 	const float CosHalfPhi = sqrt( saturate( 0.5 + 0.5 * CosPhi ) );
 	//const float Phi = acosFast( CosPhi );
 
@@ -696,6 +706,9 @@ float3 HairShading( FGBufferData GBuffer, float3 L, float3 V, half3 N, float Sha
 
 	float3 S = 0;
 
+	//论文描述的S
+	//其中M为longitudinal scattering
+	//N为azimuthal scattering
 	// R
 	if(1)
 	{
@@ -758,6 +771,7 @@ float3 HairShading( FGBufferData GBuffer, float3 L, float3 V, half3 N, float Sha
 	}
 #endif
 
+	//多次scattering的简化，注意深色头发的多次传递会更弱
 	if(1)
 	{
 		// Use soft Kajiya Kay diffuse attenuation
