@@ -167,6 +167,17 @@ public struct LuaJitTValue
 }
 
 
+/*
+typedef struct Node {
+    TValue val;
+    TValue key;
+    MRef next;
+#if !LJ_GC64
+    MRef freetop;
+#endif
+} Node;
+*/
+
 /// <summary>
 /// see Node in lj_obj.h
 /// </summary>
@@ -187,6 +198,83 @@ public struct LuaJitNode
 
     [FieldOffset(20)]
     public UInt32 freetop;
+}
+
+//typedef struct MRef
+//{
+//#if LJ_GC64
+//  uint64_t ptr64;	/* True 64 bit pointer. */
+//#else
+//    uint32_t ptr32;	/* Pseudo 32 bit pointer. */
+//#endif
+//}
+//MRef;
+//typedef struct GCRef
+//{
+//#if LJ_GC64
+//  uint64_t gcptr64;	/* True 64 bit pointer. */
+//#else
+//    uint32_t gcptr32;	/* Pseudo 32 bit pointer. */
+//#endif
+//}
+//GCRef;
+
+//#define GCHeader	GCRef nextgc; uint8_t marked; uint8_t gct
+//typedef struct GCtab
+//{
+//    GCHeader;
+//  uint8_t nomm;     /* Negative cache for fast metamethods. */
+//    int8_t colo;        /* Array colocation. */
+//    MRef array;     /* Array part. */
+//    GCRef gclist;
+//    GCRef metatable;    /* Must be at same offset in GCudata. */
+//    MRef node;      /* Hash part. */
+//    uint32_t asize; /* Size of array part (keys [0, asize-1]). */
+//    uint32_t hmask;	/* Hash part mask (size of hash part - 1). */
+//#if LJ_GC64
+//  MRef freetop;		/* Top of free elements. */
+//#endif
+//}
+//GCtab;
+
+public struct LuaJitGCtab32
+{
+    IntPtr nextgc;
+
+    UInt32 masks;
+
+    IntPtr array;
+
+    IntPtr gclist;
+
+    IntPtr metatable;
+
+    IntPtr node;
+
+    UInt32 asize;
+
+    UInt32 hmask;
+}
+
+public struct LuaJitGCtabGC64
+{
+    IntPtr nextgc;
+
+    UInt32 masks;
+
+    IntPtr array;
+
+    IntPtr gclist;
+
+    IntPtr metatable;
+
+    IntPtr node;
+
+    UInt32 asize;
+
+    UInt32 hmask;
+
+    IntPtr freetop;
 }
 
 
